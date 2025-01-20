@@ -1,0 +1,27 @@
+type Request @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  requestDetails: String
+  requestedBy: String
+  status: String
+  createdAt: AWSDateTime
+  organizationID: ID! @index(name: "byOrganization")
+}
+
+type User @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  name: String
+  email: String
+  isAdmin: Boolean
+  role: String
+  organizationID: ID! @index(name: "byOrganization")
+}
+
+type Organization @model @auth(rules: [
+  { allow: groups, groupsField: "role", operations: [read, create, update, delete] },
+  { allow: owner, ownerField: "organizationID", operations: [read, update] }
+]) {
+  id: ID!
+  Name: String
+  Users: [User] @hasMany(indexName: "byOrganization", fields: ["id"])
+  Requests: [Request] @hasMany(indexName: "byOrganization", fields: ["id"])
+}
